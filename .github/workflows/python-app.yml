@@ -10,7 +10,7 @@ jobs:
     name: Build and Test
     runs-on: self-hosted
     container:
-     image: betrand1997/myalpine_images
+     image: betrand1997/myalpine_images ## now in docker hub
 
     steps:
     - name: Checkout Code
