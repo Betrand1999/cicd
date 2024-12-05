@@ -8,7 +8,7 @@ on:
 jobs:
   build-and-test:
     name: Build and Test
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     container:
      image: betrand1997/myalpine_images ## now in docker hub
 
