@@ -9,8 +9,9 @@ jobs:
   build-and-test:
     name: Build and Test
     runs-on: self-hosted
-    container:
-      image: betrand1997/docker-workflow-image # Custom Docker image from Docker Hub
+    #container:
+      #image: betrand1997/docker-workflow-image # Custom Docker image from Docker Hub
+
 
     steps:
       - name: Checkout Code
