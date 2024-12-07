@@ -22,16 +22,13 @@ jobs:
           python3 -m venv venv
           . venv/bin/activate
           pip install --upgrade pip
-          pip install setuptools wheel twine
           pip install -r requirements.txt
 
       - name: Run Tests
         shell: bash
         run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
-          python test_app.py
+          . venv/bin/activate
+          python -m unittest test_app.py  # Run the tests using unittest
 
       # SonarQube Scan (if needed)
       - name: SonarQube Scan
