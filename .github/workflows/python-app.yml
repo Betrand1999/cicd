@@ -1,131 +1,131 @@
-# name: CI/CD Pipeline
-
-# on:
-#   push:
-#     branches:
-#       - main
-
-# jobs:
-#   build-and-test:
-#     name: Build and Test
-#     runs-on: ubuntu-latest # self-hosted
-#     container:
-#       image: betrand1997/docker-workflow-image # Custom Docker image from Docker Hub
-
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v3
-
-#       - name: Install Dependencies
-#         shell: bash # Ensure the use of bash shell
-#         run: |
-#           python3 -m venv venv
-#           . venv/bin/activate
-#           pip install --upgrade pip
-#           pip install setuptools wheel twine
-#           pip install -r requirements.txt
-
-#       # Uncomment and configure test steps if needed
-#       # - name: Run Tests
-#       #   shell: bash
-#       #   run: |
-#       #     . venv/bin/activate
-#       #     pytest tests/
-
-#       - name: SonarQube Scan
-#         uses: sonarsource/sonarqube-scan-action@master
-#         env:
-#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-#       # Uncomment the following lines if you want to fail the job on a failed Quality Gate
-#       # - name: Check Quality Gate
-#       #   uses: sonarsource/sonarqube-quality-gate-action@master
-#       #   timeout-minutes: 5
-#       #   env:
-#       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-#   package-and-publish:
-#     name: Package and Publish to PyPI
-#     runs-on: ubuntu-latest
-#     needs: build-and-test # Depends on the build-and-test job
-
-#     steps:
-#       - name: Checkout Code
-#         uses: actions/checkout@v3
-
-#       - name: Install Dependencies
-#         shell: bash # Use bash to support . syntax
-#         run: |
-#           python3 -m venv venv
-#           . venv/bin/activate
-#           pip install --upgrade pip
-#           pip install setuptools wheel twine
-
-#       - name: Build Package
-#         shell: bash # Use bash
-#         run: |
-#           python3 setup.py sdist bdist_wheel
-
-#       - name: Publish to PyPI
-#         env:
-#           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-#           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-#         shell: bash # Use bash
-#         run: |
-#           . venv/bin/activate
-#           twine upload dist/*
-
-#   deploy:
-#     name: Deploy to EC2
-#     runs-on: ubuntu-latest
-#     needs: package-and-publish # Depends on the package-and-publish job
-
-#     steps:
-#       - name: Configure AWS CLI
-#         uses: aws-actions/configure-aws-credentials@v2
-#         with:
-#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-#           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-#           aws-region: us-east-1
-
-#       - name: Deploy to EC2
-#         shell: bash
-#         run: |
-#           ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_KEY }} ec2-user@<EC2-Public-IP> << EOF
-#             sudo apt-get update
-#             sudo apt-get install -y python3-pip
-#             pip3 install <your-package-name>
-#             nohup python3 -m hello_world_app.app &
-#           EOF
-# ######
-
-
-name: Build
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
       - main
 
-
 jobs:
-  build:
-    name: Build
-    runs-on: ubuntu-latest
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest # self-hosted
     container:
-     image: betrand1997/docker-workflow-image
+      image: betrand1997/docker-workflow-image # Custom Docker image from Docker Hub
+
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: sonarsource/sonarqube-scan-action@master
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        shell: bash # Ensure the use of bash shell
+        run: |
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install setuptools wheel twine
+          pip install -r requirements.txt
+
+      # Uncomment and configure test steps if needed
+      # - name: Run Tests
+      #   shell: bash
+      #   run: |
+      #     . venv/bin/activate
+      #     pytest tests/
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: sonarsource/sonarqube-quality-gate-action@master
+
+      # Uncomment the following lines if you want to fail the job on a failed Quality Gate
+      # - name: Check Quality Gate
+      #   uses: sonarsource/sonarqube-quality-gate-action@master
       #   timeout-minutes: 5
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  package-and-publish:
+    name: Package and Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: build-and-test # Depends on the build-and-test job
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        shell: bash # Use bash to support . syntax
+        run: |
+          python3 -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install setuptools wheel twine
+
+      - name: Build Package
+        shell: bash # Use bash
+        run: |
+          python3 setup.py sdist bdist_wheel
+
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        shell: bash # Use bash
+        run: |
+          . venv/bin/activate
+          twine upload dist/*
+
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: package-and-publish # Depends on the package-and-publish job
+
+    steps:
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy to EC2
+        shell: bash
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_KEY }} ec2-user@<EC2-Public-IP> << EOF
+            sudo apt-get update
+            sudo apt-get install -y python3-pip
+            pip3 install <your-package-name>
+            nohup python3 -m hello_world_app.app &
+          EOF
+# ######
+
+
+# name: Build
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+
+# jobs:
+#   build:
+#     name: Build
+#     runs-on: ubuntu-latest
+#     container:
+#      image: betrand1997/docker-workflow-image
+#     steps:
+#       - uses: actions/checkout@v2
+#         with:
+#           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+#       - uses: sonarsource/sonarqube-scan-action@master
+#         env:
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+#       # If you wish to fail your job when the Quality Gate is red, uncomment the
+#       # following lines. This would typically be used to fail a deployment.
+#       # - uses: sonarsource/sonarqube-quality-gate-action@master
+#       #   timeout-minutes: 5
+#       #   env:
+#       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
