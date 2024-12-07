@@ -29,8 +29,11 @@ jobs:
       - name: Run Tests
         shell: bash
         run: |
-          . venv/bin/activate
-          pytest tests/
+          . 
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          python test_app.py
 
 ##### perform automated static analysis ####
       - name: SonarQube Scan
