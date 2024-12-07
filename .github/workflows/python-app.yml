@@ -12,22 +12,25 @@ jobs:
     container:
       image: betrand1997/docker-workflow-image # Custom Docker image from Docker Hub
 
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Install Dependencies
+        shell: bash # Ensure the use of bash shell
         run: |
           python3 -m venv venv
-          source venv/bin/activate
+          . venv/bin/activate
           pip install --upgrade pip
           pip install setuptools wheel twine
           pip install -r requirements.txt
 
       # Uncomment and configure test steps if needed
       # - name: Run Tests
-      #   run: pytest tests/
+      #   shell: bash
+      #   run: |
+      #     . venv/bin/activate
+      #     pytest tests/
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -52,13 +55,15 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Dependencies
+        shell: bash # Use bash to support . syntax
         run: |
           python3 -m venv venv
-          source venv/bin/activate
+          . venv/bin/activate
           pip install --upgrade pip
           pip install setuptools wheel twine
 
       - name: Build Package
+        shell: bash # Use bash
         run: |
           python3 setup.py sdist bdist_wheel
 
@@ -66,7 +71,10 @@ jobs:
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
-        run: twine upload dist/*
+        shell: bash # Use bash
+        run: |
+          . venv/bin/activate
+          twine upload dist/*
 
   deploy:
     name: Deploy to EC2
@@ -82,6 +90,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy to EC2
+        shell: bash
         run: |
           ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_KEY }} ec2-user@<EC2-Public-IP> << EOF
             sudo apt-get update
@@ -89,4 +98,3 @@ jobs:
             pip3 install <your-package-name>
             nohup python3 -m hello_world_app.app &
           EOF
-#####
