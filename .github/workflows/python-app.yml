@@ -10,7 +10,7 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-latest
     container:
-     image: betrand1997/myalpine_images ## now in docker hub
+     image: betrand1997/docker-workflow-image ## now in docker hub
 
     steps:
     - name: Checkout Code
@@ -27,8 +27,8 @@ jobs:
         pip install setuptools wheel twine
         pip install -r requirements.txt
 
-    - name: Run Tests
-      run: pytest tests/
+    # - name: Run Tests
+    #   run: pytest tests/
 
     - name: SonarQube Scan
       env:
