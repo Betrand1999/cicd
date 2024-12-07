@@ -41,3 +41,60 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+
+            #################################################
+             # package-and-publish:
+  #   name: Package and Publish to PyPI
+  #   runs-on: ubuntu-latest
+  #   needs: build-and-test # Depends on the build-and-test job
+
+  #   steps:
+  #     - name: Checkout Code
+  #       uses: actions/checkout@v3
+
+  #     - name: Install Dependencies
+  #       shell: bash # Use bash to support . syntax
+  #       run: |
+  #         python3 -m venv venv
+  #         . venv/bin/activate
+  #         pip install --upgrade pip
+  #         pip install setuptools wheel twine
+
+  #     - name: Build Package
+  #       shell: bash # Use bash
+  #       run: |
+  #         python3 setup.py sdist bdist_wheel
+
+  #     - name: Publish to PyPI
+  #       env:
+  #         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+  #         TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+  #       shell: bash # Use bash
+  #       run: |
+  #         . venv/bin/activate
+  #         twine upload dist/*
+
+  # deploy:
+  #   name: Deploy to EC2
+  #   runs-on: ubuntu-latest
+  #   needs: package-and-publish # Depends on the package-and-publish job
+
+  #   steps:
+  #     - name: Configure AWS CLI
+  #       uses: aws-actions/configure-aws-credentials@v2
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+  #         aws-region: us-east-1
+
+  #     - name: Deploy to EC2
+  #       shell: bash
+  #       run: |
+  #         ssh -o StrictHostKeyChecking=no -i ${{ secrets.EC2_KEY }} ec2-user@<EC2-Public-IP> << EOF
+  #           sudo apt-get update
+  #           sudo apt-get install -y python3-pip
+  #           pip3 install <your-package-name>
+  #           nohup python3 -m hello_world_app.app &
+  #         EOF
+
