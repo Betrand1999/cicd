@@ -27,6 +27,7 @@ jobs:
       - name: Run Tests
         shell: bash
         run: |
+          cd ~/cicd  # Ensure we're in the correct directory
           . venv/bin/activate
           python -m unittest test_app.py  # Run the tests using unittest
 
