@@ -41,14 +41,7 @@ python -m hello_world_app.app .app refers to the app.py file inside that directo
 
 ####
 cloud
-sudo apt install python-is-python3
-sudo add-apt-repository universe
-sudo apt update
-sudo apt install -y python3-pip
-python3 --version
-pip3 --version
-pip3 install -r requirements.txt
-sudo apt install python-is-python3
-sudo apt install python3-venv
 python3 -m venv venv
-python -m hello_world_app.app
+source venv/bin/activate
+pip install -r requirements.txt
+python3 -m hello_world_app.app
