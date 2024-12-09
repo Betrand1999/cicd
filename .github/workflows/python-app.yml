@@ -23,16 +23,17 @@ jobs:
           . venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt --no-cache-dir  # Disable pip cache to avoid the warning
-
+          
+# Run Unit-test with pytest
       - name: Run Tests
         shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
-          
 
-      # SonarQube Scan (if needed)
+
+# Run automated Testing with SonarQube Scan
       - name: SonarQube Scan
         uses: actions/checkout@v2
         with:
@@ -97,4 +98,5 @@ jobs:
   #           pip3 install <your-package-name>
   #           nohup python3 -m hello_world_app.app &
   #         EOF
+
 
