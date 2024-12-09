@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="betrand_ngoh_mutagha_version_1",  # Updated to reflect your project name
-    version="0.1.1",
+    name="betrand_ngoh_mutagha_version_2",  # Updated to reflect your project name
+    version="0.1.2",
     description="A simple CI/CD Flask application",
     author="BETRAND MUTAGHA",  # Replace with your name if needed
     author_email="mutagha2@gmail.com",  # Replace with your email
