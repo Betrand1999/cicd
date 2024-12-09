@@ -153,54 +153,56 @@ jobs:
 
             # Install necessary system packages
             sudo apt-get install -y python3-pip python3-venv
-
-            # Navigate to the 'cicd' directory where your project resides
-            cd ~/cicd
-
-            # Create a virtual environment named 'venv' if it doesn't exist
-            if [ ! -d "venv" ]; then
-              python3 -m venv venv
-            fi
-
-            # Activate the virtual environment
             source venv/bin/activate
+            python3 -m hello_world_app.app
 
-            # Upgrade pip within the virtual environment
-            pip install --upgrade pip
+          #   # Navigate to the 'cicd' directory where your project resides
+          #   cd ~/cicd
 
-            # Install your Flask application from PyPI within the virtual environment
-            pip install betrand_ngoh_mutagha_version_5 --upgrade
+          #   # Create a virtual environment named 'venv' if it doesn't exist
+          #   if [ ! -d "venv" ]; then
+          #     python3 -m venv venv
+          #   fi
 
-            # Install gunicorn within the virtual environment
-            pip install gunicorn --upgrade
+          #   # Activate the virtual environment
+          #   source venv/bin/activate
 
-            # Create a systemd service file for Gunicorn
-            sudo bash -c 'cat << EOL > /etc/systemd/system/betrand_ngoh_mutagha_version_5.service
-            [Unit]
-            Description=Gunicorn instance to serve betrand_ngoh_mutagha_version_5
-            After=network.target
+          #   # Upgrade pip within the virtual environment
+          #   pip install --upgrade pip
 
-            [Service]
-            User=ubuntu
-            Group=www-data
-            WorkingDirectory=/home/ubuntu/cicd
-            Environment="PATH=/home/ubuntu/cicd/venv/bin"
-            ExecStart=/home/ubuntu/cicd/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 hello_world_app.app:app
+          #   # Install your Flask application from PyPI within the virtual environment
+          #   pip install betrand_ngoh_mutagha_version_5 --upgrade
 
-            [Install]
-            WantedBy=multi-user.target
-            EOL'
+          #   # Install gunicorn within the virtual environment
+          #   pip install gunicorn --upgrade
 
-            # Reload systemd to recognize the new service
-            sudo systemctl daemon-reload
+          #   # Create a systemd service file for Gunicorn
+          #   sudo bash -c 'cat << EOL > /etc/systemd/system/betrand_ngoh_mutagha_version_5.service
+          #   [Unit]
+          #   Description=Gunicorn instance to serve betrand_ngoh_mutagha_version_5
+          #   After=network.target
 
-            # Start and enable the Gunicorn service
-            sudo systemctl start betrand_ngoh_mutagha_version_5
-            sudo systemctl enable betrand_ngoh_mutagha_version_5
+          #   [Service]
+          #   User=ubuntu
+          #   Group=www-data
+          #   WorkingDirectory=/home/ubuntu/cicd
+          #   Environment="PATH=/home/ubuntu/cicd/venv/bin"
+          #   ExecStart=/home/ubuntu/cicd/venv/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 hello_world_app.app:app
 
-            # Optionally, check the status of the service
-            sudo systemctl status betrand_ngoh_mutagha_version_5 --no-pager
-          EOF
+          #   [Install]
+          #   WantedBy=multi-user.target
+          #   EOL'
+
+          #   # Reload systemd to recognize the new service
+          #   sudo systemctl daemon-reload
+
+          #   # Start and enable the Gunicorn service
+          #   sudo systemctl start betrand_ngoh_mutagha_version_5
+          #   sudo systemctl enable betrand_ngoh_mutagha_version_5
+
+          #   # Optionally, check the status of the service
+          #   sudo systemctl status betrand_ngoh_mutagha_version_5 --no-pager
+          # EOF
 
           # Clean up the private key file
           rm ec2_key.pem
