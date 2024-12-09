@@ -52,7 +52,6 @@ jobs:
       - name: Run Unit Tests
         shell: bash
         run: |
-          # Execute test_app.py using the venv Python interpreter
           venv/bin/python test_app.py
 
 ##################### Automated test with SonarQube ################
@@ -97,8 +96,8 @@ jobs:
       - name: Publish to PyPI
         shell: bash
         env:
-          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
-          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           venv/bin/twine upload dist/*
 
