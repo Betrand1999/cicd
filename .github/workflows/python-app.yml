@@ -136,8 +136,32 @@ jobs:
 
           # SSH as 'ubuntu' (default user for Ubuntu AMIs)
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@3.235.142.37 << EOF
+            # Update package lists
             sudo apt-get update -y
-            sudo apt-get install -y python3-pip gunicorn
-            pip3 install hello_world_app --upgrade  # Ensure this matches your package name
+
+            # Install necessary system packages
+            sudo apt-get install -y python3-pip python3-venv
+
+            # Navigate to the 'cicd' directory where your project resides
+            cd ~/cicd
+
+            # Create a virtual environment named 'venv' if it doesn't exist
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
+
+            # Activate the virtual environment
+            source venv/bin/activate
+
+            # Upgrade pip within the virtual environment
+            pip install --upgrade pip
+
+            # Install your Flask application from PyPI within the virtual environment
+            pip install betrand_ngoh_mutagha_version_4 --upgrade
+
+            # Install gunicorn within the virtual environment
+            pip install gunicorn --upgrade
+
+            # Run the Flask application using gunicorn within the virtual environment
             gunicorn --workers 3 --bind 0.0.0.0:8000 hello_world_app.app:app &
           EOF
