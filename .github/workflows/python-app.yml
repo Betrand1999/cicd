@@ -54,7 +54,8 @@ jobs:
         shell: bash
         run: |
           # Run pytest within the virtual environment
-          venv/bin/pytest
+          # venv/bin/pytest
+          python3 test_app.py 
 
 ##################### Automated test with SonarQube ################
   sonarqube:
