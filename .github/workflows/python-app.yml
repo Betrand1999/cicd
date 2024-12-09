@@ -152,13 +152,15 @@ jobs:
 
             # Activate the virtual environment
             source venv/bin/activate
+            pip show flask
+            python3 -m hello_world_app.app
 
             # Upgrade pip within the virtual environment
             pip install --upgrade pip
 
             # Install your Flask application from PyPI within the virtual environment
-            pip install betrand_ngoh_mutagha_version_5 --upgrade
-            python -m  betrand_ngoh_mutagha_version_5.app
+            #pip install betrand_ngoh_mutagha_version_5 --upgrade
+            #python -m  betrand_ngoh_mutagha_version_5.app
             
 
             # Install gunicorn within the virtual environment
