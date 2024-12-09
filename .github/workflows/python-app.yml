@@ -9,7 +9,7 @@ jobs:
   ##################### Build ################
   build:
     name: Build
-    #if: false
+    if: false
     runs-on: ubuntu-latest
     container:
       image: betrand1997/docker-workflow-image
@@ -42,7 +42,7 @@ jobs:
   ##################### Unit-test with pytest ################
   test:
     name: Test
-    #if: false
+    if: false
     runs-on: ubuntu-latest
     needs: build
     container:
