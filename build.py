@@ -6,7 +6,7 @@ use_plugin("python.distutils")
 use_plugin("python.flake8")
 
 name = "hello_world_app"
-version = "0.1.0"
+version = "0.1.1"
 default_task = "publish"
 
 @init
