@@ -24,6 +24,12 @@ jobs:
           venv/bin/pip install --upgrade pip
           venv/bin/pip install -r requirements.txt --no-cache-dir
 
+      # Added new fix: Remove old artifacts before building
+      - name: Clean dist directory
+        shell: bash
+        run: |
+          rm -rf dist
+
       - name: Build Package
         shell: bash
         run: |
@@ -87,6 +93,12 @@ jobs:
           python3 -m venv venv
           venv/bin/pip install --upgrade pip
           venv/bin/pip install setuptools wheel twine
+
+######## Added new fix: Remove old artifacts before building again ###########
+      - name: Clean dist directory
+        shell: bash
+        run: |
+          rm -rf dist
 
       - name: Build Package Again
         shell: bash
