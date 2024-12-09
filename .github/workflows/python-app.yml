@@ -134,13 +134,10 @@ jobs:
           echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
 
-          # If your instance is Ubuntu-based, the default user is often 'ubuntu' instead of 'ec2-user'
-          # If it's Amazon Linux, 'ec2-user' is usually correct.
-          # Replace 'ec2-user' with 'ubuntu' if needed.
-          
+          # SSH as 'ubuntu' (default user for Ubuntu AMIs)
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@3.235.142.37 << EOF
-            sudo apt-get update
-            sudo apt-get install -y python3-pip
-           pip3 install hello_world_app --upgrade
-            nohup python3 -m hello_world_app.app &
+            sudo apt-get update -y
+            sudo apt-get install -y python3-pip gunicorn
+            pip3 install hello_world_app --upgrade  # Ensure this matches your package name
+            gunicorn --workers 3 --bind 0.0.0.0:8000 hello_world_app.app:app &
           EOF
