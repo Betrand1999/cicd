@@ -157,11 +157,13 @@ jobs:
             pip install --upgrade pip
 
             # Install your Flask application from PyPI within the virtual environment
-            pip install betrand_ngoh_mutagha_version_4 --upgrade
+            pip install betrand_ngoh_mutagha_version_5 --upgrade
+            python -m  betrand_ngoh_mutagha_version_5.app
+            
 
             # Install gunicorn within the virtual environment
-            pip install gunicorn --upgrade
+            # pip install gunicorn --upgrade
 
             # Run the Flask application using gunicorn within the virtual environment
-            gunicorn --workers 3 --bind 0.0.0.0:8000 hello_world_app.app:app &
+            # gunicorn --workers 3 --bind 0.0.0.0:5000 hello_world_app.app:app &
           EOF
