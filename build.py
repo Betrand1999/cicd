@@ -5,8 +5,8 @@ use_plugin("python.install_dependencies")
 use_plugin("python.distutils")
 use_plugin("python.flake8")
 
-name = "betrand_ngoh_mutagha_version_5"
-version = "0.1.5"
+name = "hello_world_app"
+version = "0.1.1"
 default_task = "publish"
 
 @init
