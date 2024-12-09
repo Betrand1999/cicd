@@ -1,27 +1,21 @@
-# cicd
+###
+git clone https://github.com/yourusername/your-repo.git
+###
+cd your-repo
+
 ####
 Go to steup.py edit the version
 Go to setup edit the user name
+with python cannot rebuild artifact project with same name
 ######
 
-Step 1: Clean the Workspace 
-run:     rm -rf dist build *.egg-info
-run:     rm -rf target
-run:     rm -rf dist build *.egg-info target
-run:      ls dist
-####
+
 
 
 ####
-Step 2: Build the Project
-run:     python setup.py sdist bdist_wheel   
-#####
-
-
-###
-upload to pypi
-run:   twine upload dist/*
-####
+Build the Project
+python3 -m venv venv
+source venv/bin/activate
 
 
  ####
@@ -33,15 +27,8 @@ run:   twine upload dist/*
 to run it locally
 python -m <the_root_directory_name_that_contain_your_application_with.app> 
 example python -m hello_world_app.app
-explain:
-Python treats the app.py file inside the hello_world_app directory as a module. When you run
-python -m hello_world_app.app .app refers to the app.py file inside that directory.
+
 ####
 
 
-####
-cloud
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python3 -m hello_world_app.app
+
