@@ -25,11 +25,10 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt --no-cache-dir
 
-      # Remove old artifacts before building
-      - name: Clean dist directory
+      - name: Clean Dist Directory
         shell: bash
         run: |
-           rm -rf build dist *.egg-info
+          rm -rf build dist *.egg-info
 
       - name: Build Package
         shell: bash
@@ -39,8 +38,7 @@ jobs:
           python setup.py sdist bdist_wheel
           ls dist
 
-
-  ##################### Unit-test with pytest ################
+  ##################### Unit-Test ################
   test:
     name: Unit-Test
     runs-on: ubuntu-latest
@@ -52,7 +50,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Python and Install Dependencies
+      - name: Set Up Python and Install Dependencies
         shell: bash
         run: |
           python3 -m venv venv
@@ -67,7 +65,7 @@ jobs:
           pip install pytest
           pytest test_app.py
 
-  ##################### Automated test with SonarQube ################
+  ##################### SonarQube Scan ################
   sonarqube:
     name: SonarQube Scan
     runs-on: ubuntu-latest
@@ -83,9 +81,8 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          
 
-  ##################### Package and push artifact to PyPI ################
+  ##################### Publish to PyPI ################
   package-and-publish:
     name: Package and Publish to PyPI
     runs-on: ubuntu-latest
@@ -103,8 +100,7 @@ jobs:
           pip install --upgrade pip
           pip install setuptools wheel twine
 
-      ######## Remove old artifacts before building again ###########
-      - name: Clean dist directory
+      - name: Clean Dist Directory
         shell: bash
         run: |
           rm -rf dist
@@ -124,7 +120,7 @@ jobs:
           source venv/bin/activate
           twine upload dist/*
 
-  ##################### Deploy build artifact to AWS ################
+  ##################### Deploy to EC2 ################
   deploy:
     name: Deploy to EC2
     runs-on: ubuntu-latest
@@ -141,37 +137,23 @@ jobs:
       - name: Deploy to EC2
         shell: bash
         run: |
-          # Save the EC2 private key from secret to a file and secure it
           echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
 
-          # SSH as 'ubuntu' (default user for Ubuntu AMIs)
-          ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@<EC2_PUBLIC_IP> << 'EOF'
-            # Update package lists
+          ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@3.235.142.37 bash << 'EOF'
             sudo apt-get update -y
-
-            # Install necessary system packages
             sudo apt-get install -y python3-pip python3-venv
 
-            # Navigate to the project directory (adjust if different)
             cd ~/cicd
-
-            # Create virtual environment if it doesn't exist
             if [ ! -d "venv" ]; then
               python3 -m venv venv
             fi
-
-            # Activate the virtual environment
             source venv/bin/activate
-
-            # Install or update the application
             pip install cicd --upgrade
 
-            # Run the Flask application in the background using nohup
             nohup python3 -m hello_world_app.app > app.log 2>&1 &
           EOF
 
-          # Clean up the private key file
           rm ec2_key.pem
 
       - name: Output Application URL
