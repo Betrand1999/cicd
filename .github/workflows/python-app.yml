@@ -142,7 +142,7 @@ jobs:
           chmod 600 ec2_key.pem
 
           # Execute commands on the EC2 instance
-          ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@3.235.142.37 bash << EOF
+          ssh -o StrictHostKeyChecking=no -i ec2_key.pem root@3.235.142.37 bash << EOF
             # Update package lists
             sudo apt-get update -y
 
