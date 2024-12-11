@@ -134,14 +134,20 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: us-east-1
 
+      - name: Debug SSH Connection
+        shell: bash
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
+          chmod 600 ec2_key.pem
+          ssh -v -o StrictHostKeyChecking=no -i ec2_key.pem root@3.235.142.37 echo "SSH connection successful!"
+          rm ec2_key.pem
+
       - name: Deploy to EC2
         shell: bash
         run: |
-          # Save the EC2 private key from secret to a file and secure it
           echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
 
-          # Execute commands on the EC2 instance
           ssh -o StrictHostKeyChecking=no -i ec2_key.pem root@3.235.142.37 bash << EOF
             # Update package lists
             sudo apt-get update -y
@@ -150,6 +156,7 @@ jobs:
             sudo apt-get install -y python3-pip python3-venv
 
             # Navigate to the project directory (adjust if different)
+            mkdir -p ~/cicd
             cd ~/cicd
 
             # Create virtual environment if it doesn't exist
