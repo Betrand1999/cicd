@@ -156,19 +156,18 @@ jobs:
             sudo apt-get install -y python3-pip python3-venv
 
             # Navigate to the project directory (adjust if different)
-            mkdir -p ~/cicd
-            cd ~/cicd
+            
+            cd /home/ubuntu/cicd/
 
-            # Create virtual environment if it doesn't exist
-            if [ ! -d "venv" ]; then
-              python3 -m venv venv
-            fi
+         
 
             # Activate the virtual environment
             source venv/bin/activate
 
             # Install or update the application
-            pip install cicd --upgrade
+            pip install --upgrade pip
+            pip install -r requirements.txt
+            pip show flask
 
             # Run the Flask application in the background using nohup
             nohup python3 -m hello_world_app.app > app.log 2>&1 &
