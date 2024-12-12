@@ -10,8 +10,8 @@ jobs:
   build:
     name: Build
     runs-on: [self-hosted, Linux, X64]
-    container:
-      image: betrand1997/docker-workflow-image
+    #container:
+      #image: betrand1997/docker-workflow-image
 
     steps:
       - name: Checkout Code
