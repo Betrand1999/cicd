@@ -10,8 +10,6 @@ jobs:
   build:
     name: Build
     runs-on: [self-hosted, Linux, X64]
-    #container:
-      #image: betrand1997/docker-workflow-image
 
     steps:
       - name: Checkout Code
@@ -43,8 +41,6 @@ jobs:
     name: Unit-Test
     runs-on: [self-hosted, Linux, X64]
     needs: build
-    container:
-      image: betrand1997/docker-workflow-image
 
     steps:
       - name: Checkout Code
