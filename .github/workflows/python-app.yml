@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+
 jobs:
   ##################### Build ################
   build:
@@ -11,8 +12,6 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: betrand1997/docker-workflow-image
-    # Only run if it's a push to dev or a merged PR to main
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     steps:
       - name: Checkout Code
@@ -24,7 +23,6 @@ jobs:
           python-version: '3.10'
 
       - name: Install Dependencies
-        shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
@@ -32,12 +30,10 @@ jobs:
           pip install -r requirements.txt --no-cache-dir
 
       - name: Clean Dist Directory
-        shell: bash
         run: |
           rm -rf build dist *.egg-info
 
       - name: Build Package
-        shell: bash
         run: |
           source venv/bin/activate
           pip install --upgrade setuptools wheel
@@ -51,14 +47,12 @@ jobs:
     needs: build
     container:
       image: betrand1997/docker-workflow-image
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set Up Python and Install Dependencies
-        shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
@@ -66,7 +60,6 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Unit Tests
-        shell: bash
         run: |
           source venv/bin/activate
           pip install pytest
@@ -77,7 +70,6 @@ jobs:
     name: SonarQube Scan
     runs-on: ubuntu-latest
     needs: test
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     steps:
       - name: Checkout Code
@@ -91,12 +83,11 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-  ##################### Publish to PyPI #################
+  ##################### Publish to PyPI ################
   package-and-publish:
     name: Package and Publish to PyPI
     runs-on: ubuntu-latest
     needs: sonarqube
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     steps:
       - name: Checkout Code
@@ -108,7 +99,6 @@ jobs:
           python-version: '3.10'
 
       - name: Install Dependencies for Packaging
-        shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
@@ -116,20 +106,17 @@ jobs:
           pip install setuptools wheel twine bump2version
 
       - name: Bump Version
-        shell: bash
         run: |
           source venv/bin/activate
           bump2version patch  # Use 'minor' or 'major' as appropriate
 
       - name: Build Package Again
-        shell: bash
         run: |
           source venv/bin/activate
           python setup.py sdist bdist_wheel
           ls dist
 
       - name: Publish to PyPI
-        shell: bash
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
@@ -142,7 +129,6 @@ jobs:
     name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: package-and-publish
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
 
     steps:
       - name: Configure AWS CLI
@@ -153,7 +139,6 @@ jobs:
           aws-region: us-east-1
 
       - name: Deploy to EC2
-        shell: bash
         run: |
           echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
@@ -176,7 +161,7 @@ jobs:
             # Activate the virtual environment
             source venv/bin/activate
 
-            # Install or update the application
+            # Upgrade pip and install the latest package
             pip install --upgrade pip setuptools wheel
             pip install --upgrade betrand-ngoh-mutagha-version
 
