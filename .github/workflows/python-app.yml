@@ -9,9 +9,9 @@ jobs:
   ##################### Build ################
   build:
     name: Build
-    runs-on: slef-hosted
-    #container:
-      #image: betrand1997/docker-workflow-image
+    runs-on: [self-hosted, Linux, X64]
+    container:
+      image: betrand1997/docker-workflow-image
 
     steps:
       - name: Checkout Code
@@ -41,7 +41,7 @@ jobs:
   ##################### Unit-Test ################
   test:
     name: Unit-Test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: build
     container:
       image: betrand1997/docker-workflow-image
@@ -68,7 +68,7 @@ jobs:
   ##################### SonarQube Scan ################
   sonarqube:
     name: SonarQube Scan
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: test
 
     steps:
@@ -86,7 +86,7 @@ jobs:
   ##################### Package and Publish to PyPI ################
   package-and-publish:
     name: Package and Publish to PyPI
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: sonarqube
 
     steps:
@@ -124,7 +124,7 @@ jobs:
   ##################### Deploy to EC2 ################
   deploy:
     name: Deploy to EC2
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64]
     needs: package-and-publish
 
     steps:
