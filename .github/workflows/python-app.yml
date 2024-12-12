@@ -61,11 +61,29 @@ jobs:
           pip install pytest
           pytest test_app.py
 
+  ##################### SonarQube Scan ################
+  sonarqube:
+    name: SonarQube Scan
+    runs-on: [self-hosted, Linux, X64]
+    needs: test
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
   ##################### Deploy to EC2 ################
   deploy:
     name: Deploy to EC2
     runs-on: [self-hosted, Linux, X64]
-    needs: test
+    needs: sonarqube
 
     steps:
       - name: Configure AWS CLI
