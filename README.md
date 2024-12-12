@@ -29,6 +29,12 @@ python -m <the_root_directory_name_that_contain_your_application_with.app>
 example python -m hello_world_app.app
 
 #####
+In cloud 
+
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 
 
 

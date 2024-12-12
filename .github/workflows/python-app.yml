@@ -61,67 +61,11 @@ jobs:
           pip install pytest
           pytest test_app.py
 
-  ##################### SonarQube Scan ################
-  sonarqube:
-    name: SonarQube Scan
-    runs-on: [self-hosted, Linux, X64]
-    needs: test
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: SonarQube Scan
-        uses: sonarsource/sonarqube-scan-action@master
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-
-  ##################### Package and Publish to PyPI ################
-  package-and-publish:
-    name: Package and Publish to PyPI
-    runs-on: [self-hosted, Linux, X64]
-    needs: sonarqube
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set Up Python Environment for Packaging
-        shell: bash
-        run: |
-          python3 -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install setuptools wheel twine
-
-      - name: Clean Dist Directory
-        shell: bash
-        run: |
-          rm -rf dist
-
-      - name: Build Package
-        shell: bash
-        run: |
-          source venv/bin/activate
-          python setup.py sdist bdist_wheel
-
-      - name: Publish to PyPI
-        shell: bash
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          source venv/bin/activate
-          twine upload dist/*
-
   ##################### Deploy to EC2 ################
   deploy:
     name: Deploy to EC2
     runs-on: [self-hosted, Linux, X64]
-    needs: package-and-publish
+    needs: test
 
     steps:
       - name: Configure AWS CLI
@@ -150,25 +94,30 @@ jobs:
             sudo apt-get update -y
 
             # Install necessary system packages
-            sudo apt-get install -y python3-pip python3-venv
+            sudo apt-get install -y python3 python3-pip python3-venv
 
-            # Navigate to the project directory (adjust if different)
+            # Navigate to the project directory
             mkdir -p ~/cicd
             cd ~/cicd
 
-            # Create virtual environment if it doesn't exist
+            # Fetch the latest code (if not already on the instance)
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/Betrand1999/cicd .
+            fi
+            git pull origin main
+
+            # Set up a virtual environment
             if [ ! -d "venv" ]; then
               python3 -m venv venv
             fi
-
-            # Activate the virtual environment
             source venv/bin/activate
 
-            # Install or update the application
-            pip install cicd --upgrade
+            # Install dependencies
+            pip install --upgrade pip
+            pip install -r requirements.txt
 
-            # Run the Flask application in the background using nohup
-            nohup python3 -m hello_world_app.app > app.log 2>&1 &
+            # Run the Flask application in the background
+            nohup python -m hello_world_app.app > app.log 2>&1 &
           EOF
 
           # Clean up the private key file
