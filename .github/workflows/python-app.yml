@@ -79,11 +79,49 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
+  ##################### Package and Publish to PyPI ################
+  package-and-publish:
+    name: Package and Publish to PyPI
+    runs-on: [self-hosted, Linux, X64]
+    needs: sonarqube
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set Up Python Environment for Packaging
+        shell: bash
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install setuptools wheel twine
+
+      - name: Clean Dist Directory
+        shell: bash
+        run: |
+          rm -rf dist
+
+      - name: Build Package
+        shell: bash
+        run: |
+          source venv/bin/activate
+          python setup.py sdist bdist_wheel
+
+      - name: Publish to PyPI
+        shell: bash
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          source venv/bin/activate
+          twine upload dist/*
+
   ##################### Deploy to EC2 ################
   deploy:
     name: Deploy to EC2
     runs-on: [self-hosted, Linux, X64]
-    needs: sonarqube
+    needs: package-and-publish
 
     steps:
       - name: Configure AWS CLI
