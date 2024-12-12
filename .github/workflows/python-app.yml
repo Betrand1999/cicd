@@ -9,9 +9,9 @@ jobs:
   ##################### Build ################
   build:
     name: Build
-    runs-on: ubuntu-latest
-    container:
-      image: betrand1997/docker-workflow-image
+    runs-on: slef-hosted
+    #container:
+      #image: betrand1997/docker-workflow-image
 
     steps:
       - name: Checkout Code
@@ -38,146 +38,146 @@ jobs:
           python setup.py sdist bdist_wheel
           ls dist
 
-  # ##################### Unit-Test ################
-  # test:
-  #   name: Unit-Test
-  #   runs-on: ubuntu-latest
-  #   needs: build
-  #   container:
-  #     image: betrand1997/docker-workflow-image
+  ##################### Unit-Test ################
+  test:
+    name: Unit-Test
+    runs-on: ubuntu-latest
+    needs: build
+    container:
+      image: betrand1997/docker-workflow-image
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  #     - name: Set Up Python Environment
-  #       shell: bash
-  #       run: |
-  #         python3 -m venv venv
-  #         source venv/bin/activate
-  #         pip install --upgrade pip
-  #         pip install -r requirements.txt
+      - name: Set Up Python Environment
+        shell: bash
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-  #     - name: Run Unit Tests
-  #       shell: bash
-  #       run: |
-  #         source venv/bin/activate
-  #         pip install pytest
-  #         pytest test_app.py
+      - name: Run Unit Tests
+        shell: bash
+        run: |
+          source venv/bin/activate
+          pip install pytest
+          pytest test_app.py
 
-  # ##################### SonarQube Scan ################
-  # sonarqube:
-  #   name: SonarQube Scan
-  #   runs-on: ubuntu-latest
-  #   needs: test
+  ##################### SonarQube Scan ################
+  sonarqube:
+    name: SonarQube Scan
+    runs-on: ubuntu-latest
+    needs: test
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-  #     - name: SonarQube Scan
-  #       uses: sonarsource/sonarqube-scan-action@master
-  #       env:
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-  # ##################### Package and Publish to PyPI ################
-  # package-and-publish:
-  #   name: Package and Publish to PyPI
-  #   runs-on: ubuntu-latest
-  #   needs: sonarqube
+  ##################### Package and Publish to PyPI ################
+  package-and-publish:
+    name: Package and Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: sonarqube
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  #     - name: Set Up Python Environment for Packaging
-  #       shell: bash
-  #       run: |
-  #         python3 -m venv venv
-  #         source venv/bin/activate
-  #         pip install --upgrade pip
-  #         pip install setuptools wheel twine
+      - name: Set Up Python Environment for Packaging
+        shell: bash
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install setuptools wheel twine
 
-  #     - name: Clean Dist Directory
-  #       shell: bash
-  #       run: |
-  #         rm -rf dist
+      - name: Clean Dist Directory
+        shell: bash
+        run: |
+          rm -rf dist
 
-  #     - name: Build Package
-  #       shell: bash
-  #       run: |
-  #         source venv/bin/activate
-  #         python setup.py sdist bdist_wheel
+      - name: Build Package
+        shell: bash
+        run: |
+          source venv/bin/activate
+          python setup.py sdist bdist_wheel
 
-  #     - name: Publish to PyPI
-  #       shell: bash
-  #       env:
-  #         TWINE_USERNAME: __token__
-  #         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-  #       run: |
-  #         source venv/bin/activate
-  #         twine upload dist/*
+      - name: Publish to PyPI
+        shell: bash
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          source venv/bin/activate
+          twine upload dist/*
 
-  # ##################### Deploy to EC2 ################
-  # deploy:
-  #   name: Deploy to EC2
-  #   runs-on: ubuntu-latest
-  #   needs: package-and-publish
+  ##################### Deploy to EC2 ################
+  deploy:
+    name: Deploy to EC2
+    runs-on: ubuntu-latest
+    needs: package-and-publish
 
-  #   steps:
-  #     - name: Configure AWS CLI
-  #       uses: aws-actions/configure-aws-credentials@v2
-  #       with:
-  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-  #         aws-region: us-east-1
+    steps:
+      - name: Configure AWS CLI
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: us-east-1
 
-  #     - name: Debug SSH Connection
-  #       shell: bash
-  #       run: |
-  #         echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
-  #         chmod 600 ec2_key.pem
-  #         ssh -v -o StrictHostKeyChecking=no -i ec2_key.pem root@3.235.142.37 echo "SSH connection successful!"
-  #         rm ec2_key.pem
+      - name: Debug SSH Connection
+        shell: bash
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
+          chmod 600 ec2_key.pem
+          ssh -v -o StrictHostKeyChecking=no -i ec2_key.pem root@3.235.142.37 echo "SSH connection successful!"
+          rm ec2_key.pem
 
-  #     - name: Deploy to EC2
-  #       shell: bash
-  #       run: |
-  #         echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
-  #         chmod 600 ec2_key.pem
+      - name: Deploy to EC2
+        shell: bash
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
+          chmod 600 ec2_key.pem
 
-  #         ssh -o StrictHostKeyChecking=no -i ec2_key.pem root@3.235.142.37 bash << EOF
-  #           # Update package lists
-  #           sudo apt-get update -y
+          ssh -o StrictHostKeyChecking=no -i ec2_key.pem root@3.235.142.37 bash << EOF
+            # Update package lists
+            sudo apt-get update -y
 
-  #           # Install necessary system packages
-  #           sudo apt-get install -y python3-pip python3-venv
+            # Install necessary system packages
+            sudo apt-get install -y python3-pip python3-venv
 
-  #           # Navigate to the project directory (adjust if different)
-  #           mkdir -p ~/cicd
-  #           cd ~/cicd
+            # Navigate to the project directory (adjust if different)
+            mkdir -p ~/cicd
+            cd ~/cicd
 
-  #           # Create virtual environment if it doesn't exist
-  #           if [ ! -d "venv" ]; then
-  #             python3 -m venv venv
-  #           fi
+            # Create virtual environment if it doesn't exist
+            if [ ! -d "venv" ]; then
+              python3 -m venv venv
+            fi
 
-  #           # Activate the virtual environment
-  #           source venv/bin/activate
+            # Activate the virtual environment
+            source venv/bin/activate
 
-  #           # Install or update the application
-  #           pip install cicd --upgrade
+            # Install or update the application
+            pip install cicd --upgrade
 
-  #           # Run the Flask application in the background using nohup
-  #           nohup python3 -m hello_world_app.app > app.log 2>&1 &
-  #         EOF
+            # Run the Flask application in the background using nohup
+            nohup python3 -m hello_world_app.app > app.log 2>&1 &
+          EOF
 
-  #         # Clean up the private key file
-  #         rm ec2_key.pem
+          # Clean up the private key file
+          rm ec2_key.pem
 
-  #     - name: Output Application URL
-  #       if: success()
-  #       run: echo "Application is accessible at http://3.235.142.37:8000"
+      - name: Output Application URL
+        if: success()
+        run: echo "Application is accessible at http://3.235.142.37:8000"
