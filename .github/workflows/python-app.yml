@@ -1,11 +1,9 @@
-# File: .github/workflows/ci-cd-pipeline.yml
-
 name: CI/CD Pipeline
 
 on:
   push:
     branches:
-      - main  # Trigger only on pushes to the 'main' branch
+      - main
 
 jobs:
   ##################### Build ################
@@ -13,45 +11,32 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     container:
-      image: betrand1997/docker-workflow-image  # Ensure this image has necessary dependencies
+      image: betrand1997/docker-workflow-image
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set Up Python Environment
+        shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt --no-cache-dir
-        shell: bash  # Use Bash shell to support 'source'
-        env:
-          pythonLocation: /__t/Python/3.10.15/x64
-          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
-          Python_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
-          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
       - name: Clean Dist Directory
+        shell: bash
         run: |
           rm -rf build dist *.egg-info
 
       - name: Build Package
+        shell: bash
         run: |
           source venv/bin/activate
           pip install --upgrade setuptools wheel
           python setup.py sdist bdist_wheel
           ls dist
-        shell: bash  # Ensure Bash shell is used
-        env:
-          pythonLocation: /__t/Python/3.10.15/x64
-          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
-          Python_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
-          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
   ##################### Unit-Test ################
   test:
@@ -59,40 +44,26 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     container:
-      image: betrand1997/docker-workflow-image  # Ensure this image has necessary dependencies
+      image: betrand1997/docker-workflow-image
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set Up Python Environment
+        shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install -r requirements.txt --no-cache-dir
-        shell: bash  # Use Bash shell to support 'source'
-        env:
-          pythonLocation: /__t/Python/3.10.15/x64
-          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
-          Python_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
-          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
+          pip install -r requirements.txt
 
       - name: Run Unit Tests
+        shell: bash
         run: |
           source venv/bin/activate
           pip install pytest
           pytest test_app.py
-        shell: bash  # Ensure Bash shell is used
-        env:
-          pythonLocation: /__t/Python/3.10.15/x64
-          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
-          Python_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
-          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
   ##################### SonarQube Scan ################
   sonarqube:
@@ -104,7 +75,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Necessary for SonarQube to analyze all commits
+          fetch-depth: 0
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -112,7 +83,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-  ##################### Publish to PyPI ################
+  ##################### Package and Publish to PyPI ################
   package-and-publish:
     name: Package and Publish to PyPI
     runs-on: ubuntu-latest
@@ -122,69 +93,33 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set Up Python Environment
+      - name: Set Up Python Environment for Packaging
+        shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install -r requirements.txt --no-cache-dir
-        shell: bash  # Use Bash shell to support 'source'
-        env:
-          pythonLocation: /__t/Python/3.10.15/x64
-          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
-          Python_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
-          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
+          pip install setuptools wheel twine
 
-      - name: Install Dependencies for Packaging
+      - name: Clean Dist Directory
+        shell: bash
         run: |
-          source venv/bin/activate
-          pip install --upgrade setuptools wheel twine bump2version
-        shell: bash  # Ensure Bash shell is used
-        env:
-          pythonLocation: /__t/Python/3.10.15/x64
-          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
-          Python_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
-          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
+          rm -rf dist
 
-      - name: Bump Version
-        run: |
-          source venv/bin/activate
-          bump2version patch  # Use 'minor' or 'major' as appropriate
-        shell: bash  # Ensure Bash shell is used
-        env:
-          pythonLocation: /__t/Python/3.10.15/x64
-          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
-          Python_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
-          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
-
-      - name: Build Package Again
+      - name: Build Package
+        shell: bash
         run: |
           source venv/bin/activate
           python setup.py sdist bdist_wheel
-          ls dist
-        shell: bash  # Ensure Bash shell is used
-        env:
-          pythonLocation: /__t/Python/3.10.15/x64
-          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
-          Python_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
-          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
-          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
       - name: Publish to PyPI
+        shell: bash
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
         run: |
           source venv/bin/activate
           twine upload dist/*
-        shell: bash  # Ensure Bash shell is used
 
   ##################### Deploy to EC2 ################
   deploy:
@@ -200,20 +135,30 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
           aws-region: us-east-1
 
+      - name: Debug SSH Connection
+        shell: bash
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
+          chmod 600 ec2_key.pem
+          ssh -v -o StrictHostKeyChecking=no -i ec2_key.pem root@3.235.142.37 echo "SSH connection successful!"
+          rm ec2_key.pem
+
       - name: Deploy to EC2
+        shell: bash
         run: |
           echo "${{ secrets.EC2_KEY }}" > ec2_key.pem
           chmod 600 ec2_key.pem
 
-          ssh -o StrictHostKeyChecking=no -i ec2_key.pem ubuntu@3.235.142.37 bash << EOF
+          ssh -o StrictHostKeyChecking=no -i ec2_key.pem root@3.235.142.37 bash << EOF
             # Update package lists
             sudo apt-get update -y
 
             # Install necessary system packages
             sudo apt-get install -y python3-pip python3-venv
 
-            # Navigate to the project directory
-            cd /home/ubuntu/cicd/
+            # Navigate to the project directory (adjust if different)
+            mkdir -p ~/cicd
+            cd ~/cicd
 
             # Create virtual environment if it doesn't exist
             if [ ! -d "venv" ]; then
@@ -223,16 +168,11 @@ jobs:
             # Activate the virtual environment
             source venv/bin/activate
 
-            # Upgrade pip and install the latest package
-            pip install --upgrade pip setuptools wheel
-            pip install --upgrade betrand-ngoh-mutagha-version
+            # Install or update the application
+            pip install cicd --upgrade
 
-            # Verify Flask installation
-            pip show flask || pip install flask
-
-            # Restart the Flask application using systemd
-            sudo systemctl daemon-reload
-            sudo systemctl restart flask_app
+            # Run the Flask application in the background using nohup
+            nohup python3 -m hello_world_app.app > app.log 2>&1 &
           EOF
 
           # Clean up the private key file
