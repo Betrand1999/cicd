@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="betrand_ngoh_mutagha_version_12",  # Updated to reflect your project name
-    version="0.2.1",  # Valid version string as per PEP 440
+    name="betrand_ngoh_mutagha_version_10",  # Updated to reflect your project name
+    version="0.2.10",  # Valid version string as per PEP 440
     author="BETRAND MUTAGHA",
     author_email="mutagha2@gmail.com",
     url="https://github.com/Betrand1999/cicd",
