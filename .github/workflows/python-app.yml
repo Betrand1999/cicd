@@ -4,11 +4,6 @@ on:
   push:
     branches:
       - dev
-  pull_request:
-    types: [closed]
-    branches:
-      - main
-
 jobs:
   ##################### Build ################
   build:
@@ -96,7 +91,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-  ##################### Publish to PyPI ################
+  ##################### Publish to PyPI #################
   package-and-publish:
     name: Package and Publish to PyPI
     runs-on: ubuntu-latest
