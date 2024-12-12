@@ -1,9 +1,11 @@
+# File: .github/workflows/ci-cd-pipeline.yml
+
 name: CI/CD Pipeline
 
 on:
   push:
     branches:
-      - main
+      - main  # Trigger only on pushes to the 'main' branch
 
 jobs:
   ##################### Build ################
@@ -11,23 +13,26 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     container:
-      image: betrand1997/docker-workflow-image
+      image: betrand1997/docker-workflow-image  # Ensure this image has necessary dependencies
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install Dependencies
+      - name: Set Up Python Environment
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt --no-cache-dir
+        shell: bash  # Use Bash shell to support 'source'
+        env:
+          pythonLocation: /__t/Python/3.10.15/x64
+          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
+          Python_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
+          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
       - name: Clean Dist Directory
         run: |
@@ -39,6 +44,14 @@ jobs:
           pip install --upgrade setuptools wheel
           python setup.py sdist bdist_wheel
           ls dist
+        shell: bash  # Ensure Bash shell is used
+        env:
+          pythonLocation: /__t/Python/3.10.15/x64
+          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
+          Python_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
+          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
   ##################### Unit-Test ################
   test:
@@ -46,24 +59,40 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     container:
-      image: betrand1997/docker-workflow-image
+      image: betrand1997/docker-workflow-image  # Ensure this image has necessary dependencies
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set Up Python and Install Dependencies
+      - name: Set Up Python Environment
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r requirements.txt --no-cache-dir
+        shell: bash  # Use Bash shell to support 'source'
+        env:
+          pythonLocation: /__t/Python/3.10.15/x64
+          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
+          Python_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
+          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
       - name: Run Unit Tests
         run: |
           source venv/bin/activate
           pip install pytest
           pytest test_app.py
+        shell: bash  # Ensure Bash shell is used
+        env:
+          pythonLocation: /__t/Python/3.10.15/x64
+          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
+          Python_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
+          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
   ##################### SonarQube Scan ################
   sonarqube:
@@ -75,7 +104,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # Necessary for SonarQube to analyze all commits
 
       - name: SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -93,28 +122,60 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set Up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Install Dependencies for Packaging
+      - name: Set Up Python Environment
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install setuptools wheel twine bump2version
+          pip install -r requirements.txt --no-cache-dir
+        shell: bash  # Use Bash shell to support 'source'
+        env:
+          pythonLocation: /__t/Python/3.10.15/x64
+          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
+          Python_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
+          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
+
+      - name: Install Dependencies for Packaging
+        run: |
+          source venv/bin/activate
+          pip install --upgrade setuptools wheel twine bump2version
+        shell: bash  # Ensure Bash shell is used
+        env:
+          pythonLocation: /__t/Python/3.10.15/x64
+          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
+          Python_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
+          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
       - name: Bump Version
         run: |
           source venv/bin/activate
           bump2version patch  # Use 'minor' or 'major' as appropriate
+        shell: bash  # Ensure Bash shell is used
+        env:
+          pythonLocation: /__t/Python/3.10.15/x64
+          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
+          Python_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
+          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
       - name: Build Package Again
         run: |
           source venv/bin/activate
           python setup.py sdist bdist_wheel
           ls dist
+        shell: bash  # Ensure Bash shell is used
+        env:
+          pythonLocation: /__t/Python/3.10.15/x64
+          PKG_CONFIG_PATH: /__t/Python/3.10.15/x64/lib/pkgconfig
+          Python_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python2_ROOT_DIR: /__t/Python/3.10.15/x64
+          Python3_ROOT_DIR: /__t/Python/3.10.15/x64
+          LD_LIBRARY_PATH: /__t/Python/3.10.15/x64/lib
 
       - name: Publish to PyPI
         env:
@@ -123,6 +184,7 @@ jobs:
         run: |
           source venv/bin/activate
           twine upload dist/*
+        shell: bash  # Ensure Bash shell is used
 
   ##################### Deploy to EC2 ################
   deploy:
