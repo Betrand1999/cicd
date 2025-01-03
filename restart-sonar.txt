@@ -1,0 +1,33 @@
+# step 1
+/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+
+
+# step 2
+
+[Unit]
+Description=SonarQube service
+After=syslog.target network.target
+
+[Service]
+Type=forking
+ExecStart=/opt/sonarqube/bin/linux-x86-64/sonar.sh start
+ExecStop=/opt/sonarqube/bin/linux-x86-64/sonar.sh stop
+User=sonar
+Group=sonar
+LimitNOFILE=65536
+LimitNPROC=4096
+TimeoutSec=600
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+# step 3 
+sudo systemctl daemon-reload
+
+# step 4
+sudo systemctl enable sonarqube
+sudo systemctl start sonarqube
+systemctl status sonarqube
+
