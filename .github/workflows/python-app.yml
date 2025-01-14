@@ -181,4 +181,4 @@ jobs:
 
       - name: Output Application URL
         if: success()
-        run: echo "Application is accessible at http://3.235.142.37:1000"
+        run: echo "Application is accessible at http://3.235.142.37:8000"
