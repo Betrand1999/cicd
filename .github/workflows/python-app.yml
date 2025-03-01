@@ -9,7 +9,7 @@ jobs:
   ##################### Build ################
   build:
     name: Build
-    runs-on: [self-hosted, Linux, X64]
+    runs-on: [self-hosted,macOS, X64]  # [self-hosted, Linux, X64]
 
     steps:
       - name: Checkout Code
