@@ -45,7 +45,7 @@ jobs:
   ##################### Unit-Test ################
   test:
     name: Unit-Test
-    runs-on: [self-hosted, Linux, X64]
+    runs-on:  [self-hosted] # [self-hosted, Linux, X64]
     needs: build
     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
 
@@ -71,7 +71,7 @@ jobs:
   ##################### SonarQube Scan ################
   sonarqube:
     name: SonarQube Scan
-    runs-on: [self-hosted, Linux, X64]
+    runs-on:  [self-hosted] # [self-hosted, Linux, X64]
     needs: test
     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
 
@@ -91,7 +91,7 @@ jobs:
   #################### Package and Publish to PyPI ################
   package-and-publish:
     name: Package and Publish to PyPI
-    runs-on: [self-hosted, Linux, X64]
+    runs-on:  [self-hosted] # [self-hosted, Linux, X64]
     needs: sonarqube
     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
 
