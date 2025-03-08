@@ -205,7 +205,7 @@ jobs:
         EOF
     - name: Print Artifact Server URL
       run: |
-        echo "✅ Deployment Successful! Access the Artifact Server here:"
-        echo "🔗 http://${{ secrets.EC2_HOST }}:5000/"
-        echo "🔗 [Click to Access](http://${{ secrets.EC2_HOST }}:5000/)"
+        echo "::notice::✅ Deployment Successful! Click below to access the Artifact Server:"
+        echo "::notice::🔗 [Click to Access Artifact Server](http://${{ secrets.EC2_HOST }}:5000/)"
+
     
