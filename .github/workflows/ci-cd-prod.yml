@@ -45,7 +45,6 @@ jobs:
   ##################### Unit-Test ################
   test:
     name: Unit-Test
-    if: false
     runs-on:  [self-hosted] # [self-hosted, Linux, X64]
     needs: build
     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
@@ -74,11 +73,10 @@ jobs:
   ##################### SonarQube Scan ################
   sonarqube:
     name: SonarQube Scan
-    if: false
     runs-on:  [self-hosted] # [self-hosted, Linux, X64]
     needs: test
     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
-    continue-on-error: true
+    
 
 
     steps:
