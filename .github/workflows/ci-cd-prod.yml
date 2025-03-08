@@ -139,73 +139,50 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Set up SSH Connection to EC2
-      run: |
-       mkdir -p ~/.ssh
-       echo "${{ secrets.EC2_KEY }}" > ~/.ssh/ec2_key.pem
-       chmod 600 ~/.ssh/ec2_key.pem
-       ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+    # - name: Set up SSH Connection to EC2
+    #   run: |
+    #    mkdir -p ~/.ssh
+    #    echo "${{ secrets.EC2_KEY }}" > ~/.ssh/ec2_key.pem
+    #    chmod 600 ~/.ssh/ec2_key.pem
+    #    ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
 
-    - name: Deploy Flask Server on EC2
+    - name: Run Artifact on EC2
       run: |
         ssh -i ~/.ssh/ec2_key.pem ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
-          # Go to the project directory
-          cd ~/actions-runner/_work/cicd/cicd
-
-          # Activate Virtual Environment and Install Dependencies
+          cd /home/ubuntu/actions-runner/_work/cicd/cicd
+          
+          # Create a virtual environment
           python3 -m venv venv
           source venv/bin/activate
-          pip install flask flask-httpauth
+          
+          # Install Flask
+          pip install flask
 
-          # Create Flask App with Authentication
-          cat <<FLASK > server.py
-          from flask import Flask, send_from_directory
-          from flask_httpauth import HTTPBasicAuth
-          from werkzeug.security import generate_password_hash, check_password_hash
-          import os
+          # Find and install the latest .whl file dynamically
+          LATEST_WHL=\$(ls -t dist/*.whl | head -n 1)
+          echo "Installing latest artifact: \$LATEST_WHL"
+          pip install "\$LATEST_WHL"
+
+          # Deploy Flask Application
+          cat <<FLASK > app.py
+          from flask import Flask
 
           app = Flask(__name__)
-          auth = HTTPBasicAuth()
-          ARTIFACT_DIR = "dist"
-
-          users = {
-              "${{ secrets.BASIC_AUTH_USER }}": generate_password_hash("${{ secrets.BASIC_AUTH_PASS }}")
-          }
-
-          @auth.verify_password
-          def verify_password(username, password):
-              if username in users and check_password_hash(users.get(username), password):
-                  return username
-              return None
 
           @app.route("/")
-          @auth.login_required
-          def list_files():
-              files = os.listdir(ARTIFACT_DIR)
-              links = [f'<a href="/files/{file}">{file}</a><br>' for file in files]
-              return f"<h1>Available Artifacts</h1><p>Welcome, {auth.current_user()}!</p>" + "".join(links)
-
-          @app.route("/files/<path:filename>")
-          @auth.login_required
-          def serve_file(filename):
-              return send_from_directory(ARTIFACT_DIR, filename)
+          def home():
+              return "<h1>Artifact is Running Successfully on EC2!</h1>"
 
           if __name__ == "__main__":
               app.run(host="0.0.0.0", port=5000)
           FLASK
 
-          # Stop existing Flask server if running
-          pkill -f server.py || true
+          # Stop existing Flask process if running
+          pkill -f app.py || true
 
-          # Start Flask Server in Background
-          nohup python server.py > flask.log 2>&1 &
+          # Start Flask in background
+          nohup python app.py > flask.log 2>&1 &
 
-          echo "Flask server started on EC2!"
+          echo "✅ Artifact is running on EC2!"
         EOF
-    - name: Print Artifact Server URL
-      run: |
-        echo "::notice::✅ Deployment Successful! Click below to access the Artifact Server:"
-        echo "::notice::🔗 [Click to Access Artifact Server](http://${{ secrets.EC2_HOST }}:5000/)"
-
-    
