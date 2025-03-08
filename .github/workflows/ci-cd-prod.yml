@@ -22,10 +22,12 @@ jobs:
       - name: Set Up Python Environment
         shell: bash
         run: |
-          python3 -m venv venv
+          python3 -m venv venv 
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt --no-cache-dir
+# python3 -m venv venv = create virtual env  inside your project directory
+# source venv/bin/activate = activate and install dependencies
 
       - name: Clean Dist Directory
         shell: bash
@@ -40,90 +42,90 @@ jobs:
           python setup.py sdist bdist_wheel
           ls dist
 
-  # ##################### Unit-Test ################
-  # test:
-  #   name: Unit-Test
-  #   runs-on: [self-hosted, Linux, X64]
-  #   needs: build
-  #   environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+  ##################### Unit-Test ################
+  test:
+    name: Unit-Test
+    runs-on: [self-hosted, Linux, X64]
+    needs: build
+    environment: prod  # 🔹 Fetch secrets from the 'prod' environment
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  #     - name: Set Up Python Environment
-  #       shell: bash
-  #       run: |
-  #         python3 -m venv venv
-  #         source venv/bin/activate
-  #         pip install --upgrade pip
-  #         pip install -r requirements.txt
+      - name: Set Up Python Environment
+        shell: bash
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
 
-  #     - name: Run Unit Tests
-  #       shell: bash
-  #       run: |
-  #         source venv/bin/activate
-  #         pip install pytest
-  #         pytest test_app.py
+      - name: Run Unit Tests
+        shell: bash
+        run: |
+          source venv/bin/activate
+          pip install pytest
+          pytest test_app.py
 
-  # ##################### SonarQube Scan ################
-  # sonarqube:
-  #   name: SonarQube Scan
-  #   runs-on: [self-hosted, Linux, X64]
-  #   needs: test
-  #   environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+  ##################### SonarQube Scan ################
+  sonarqube:
+    name: SonarQube Scan
+    runs-on: [self-hosted, Linux, X64]
+    needs: test
+    environment: prod  # 🔹 Fetch secrets from the 'prod' environment
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
-  #       with:
-  #         fetch-depth: 0
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-  #     - name: SonarQube Scan
-  #       uses: sonarsource/sonarqube-scan-action@master
-  #       env:
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      - name: SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
 
-  # #################### Package and Publish to PyPI ################
-  # package-and-publish:
-  #   name: Package and Publish to PyPI
-  #   runs-on: [self-hosted, Linux, X64]
-  #   needs: sonarqube
-  #   environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+  #################### Package and Publish to PyPI ################
+  package-and-publish:
+    name: Package and Publish to PyPI
+    runs-on: [self-hosted, Linux, X64]
+    needs: sonarqube
+    environment: prod  # 🔹 Fetch secrets from the 'prod' environment
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  #     - name: Set Up Python Environment for Packaging
-  #       shell: bash
-  #       run: |
-  #         python3 -m venv venv
-  #         source venv/bin/activate
-  #         pip install --upgrade pip
-  #         pip install setuptools wheel twine
+      - name: Set Up Python Environment for Packaging
+        shell: bash
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
+          pip install setuptools wheel twine
 
-  #     - name: Clean Dist Directory
-  #       shell: bash
-  #       run: |
-  #         rm -rf dist
+      - name: Clean Dist Directory
+        shell: bash
+        run: |
+          rm -rf dist
 
-  #     - name: Build Package
-  #       shell: bash
-  #       run: |
-  #         source venv/bin/activate
-  #         python setup.py sdist bdist_wheel
+      - name: Build Package
+        shell: bash
+        run: |
+          source venv/bin/activate
+          python setup.py sdist bdist_wheel
 
-  #     - name: Publish to PyPI
-  #       shell: bash
-  #       env:
-  #         TWINE_USERNAME: __token__
-  #         TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-  #       run: |
-  #         source venv/bin/activate
-  #         twine upload dist/*
+      - name: Publish to PyPI
+        shell: bash
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          source venv/bin/activate
+          twine upload dist/*
 
 
  
