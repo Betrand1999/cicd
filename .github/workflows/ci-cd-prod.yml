@@ -11,7 +11,7 @@ jobs:
   ##################### Build ################
   build:
     name: Build
-    runs-on: [self-hosted, Linux, X64,ip-172-31-22-214]
+    runs-on: [self-hosted] # [self-hosted, Linux, X64,ip-172-31-22-214]
     if: github.event.pull_request.merged == true
     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
 
