@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="Betrand-ngoh-mutagha-version-2",  # Use hyphens
-    version="0.2.03",  # Ensure this is the correct and latest version
+    name="Betrand-ngoh-mutagha-version-0",  # Use hyphens
+    version="0.2.04",  # Ensure this is the correct and latest version
     author="BETRAND MUTAGHA",
     author_email="mutagha2@gmail.com",
     url="https://github.com/Betrand1999/cicd",
