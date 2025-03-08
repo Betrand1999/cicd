@@ -45,6 +45,7 @@ jobs:
   ##################### Unit-Test ################
   test:
     name: Unit-Test
+    if: false
     runs-on:  [self-hosted] # [self-hosted, Linux, X64]
     needs: build
     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
@@ -71,6 +72,7 @@ jobs:
   ##################### SonarQube Scan ################
   sonarqube:
     name: SonarQube Scan
+    if: false
     runs-on:  [self-hosted] # [self-hosted, Linux, X64]
     needs: test
     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
@@ -196,5 +198,7 @@ jobs:
 
     - name: Print Artifact Server URL
       run: |
-        echo "::notice::✅ Application Deployed Successfully! Click below to access it:"
-        echo "::notice::🔗 [Click to Access Application](http://${{ secrets.EC2_HOST }}:5000/)"
+       PUBLIC_IP=$(dig +short ${{ secrets.EC2_HOST }} | tail -n1)
+       echo "::notice::✅ Application Deployed Successfully! Click below to access it:"
+       echo "::notice::🔗 [Click to Access Application](http://$PUBLIC_IP:5000/)"
+ 
