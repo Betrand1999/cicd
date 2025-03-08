@@ -130,6 +130,7 @@ jobs:
 
  
   #################### Deploy Artifact Server ################
+    #################### Deploy Artifact Server ################
   deploy:
    name: Deploy Artifact Server on EC2
    runs-on: ubuntu-latest
@@ -146,23 +147,29 @@ jobs:
        chmod 600 ~/.ssh/ec2_key.pem
        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
-
-    - name: Run Artifact on EC2
+    - name: Deploy Flask Server on EC2
       run: |
-        ssh -i ~/.ssh/ec2_key.pem ubuntu@${{ secrets.EC2_HOST }} << 'EOF'
+        ssh -i ~/.ssh/ec2_key.pem ubuntu@${{ secrets.EC2_HOST }} << EOF
           cd /home/ubuntu/actions-runner/_work/cicd/cicd
-          
+
           # Create a virtual environment
           python3 -m venv venv
           source venv/bin/activate
-          
+
           # Install Flask
           pip install flask
 
-          # Find and install the latest .whl file dynamically
+          # Dynamically find the latest built `.whl` file
           LATEST_WHL=\$(ls -t dist/*.whl | head -n 1)
           echo "Installing latest artifact: \$LATEST_WHL"
-          pip install "\$LATEST_WHL"
+
+          # Ensure a .whl file is found before installing
+          if [ -f "\$LATEST_WHL" ]; then
+            pip install "\$LATEST_WHL"
+          else
+            echo "❌ No .whl file found in dist/ directory!"
+            exit 1
+          fi
 
           # Deploy Flask Application
           cat <<FLASK > app.py
@@ -186,3 +193,8 @@ jobs:
 
           echo "✅ Artifact is running on EC2!"
         EOF
+
+    - name: Print Artifact Server URL
+      run: |
+        echo "::notice::✅ Application Deployed Successfully! Click below to access it:"
+        echo "::notice::🔗 [Click to Access Application](http://${{ secrets.EC2_HOST }}:5000/)"
