@@ -119,6 +119,7 @@ jobs:
           twine upload dist/*
 
   ################### Deploy Python Artifact as Docker Image ################
+  ##################### Deploy Python Artifact as Docker Image ################
   deploy-docker:
    name: Deploy Python Artifact as Docker Image
    runs-on: [self-hosted]
