@@ -133,77 +133,46 @@ jobs:
           source venv/bin/activate
           twine upload dist/*
 
-
- 
-  #################### Deploy Artifact Server ################
-    #################### Deploy Artifact Server ################
-  deploy:
-   name: Deploy Artifact Server on EC2
-   runs-on: ubuntu-latest
+#################### Deploy to Docker Hub ################
+  Contanarised-py-Artifact-and-Push-Image-to-dockerhub:
+   name: Deploy Docker Image
+   runs-on: [self-hosted]  # Runs on your self-hosted runner with Docker
    needs: package-and-publish
-   environment: prod
+   environment: prod  # 🔹 Fetch secrets from the 'prod' environment
 
    steps:
     - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Set up SSH Connection to EC2
+    - name: Get Latest Artifact
       run: |
-       mkdir -p ~/.ssh
-       echo "${{ secrets.EC2_KEY }}" > ~/.ssh/ec2_key.pem
-       chmod 600 ~/.ssh/ec2_key.pem
-       ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+        LATEST_WHL=$(ls -t dist/*.whl | head -n 1)
+        echo "LATEST_WHL=$LATEST_WHL" >> $GITHUB_ENV
+        echo "Using artifact: $LATEST_WHL"
 
-    - name: Deploy Flask Server on EC2
+    - name: Create Dockerfile
       run: |
-        ssh -i ~/.ssh/ec2_key.pem ubuntu@${{ secrets.EC2_HOST }} << EOF
-          cd /home/ubuntu/actions-runner/_work/cicd/cicd
+        cat <<EOF > Dockerfile
+        FROM python:3.9-slim
 
-          # Create a virtual environment
-          python3 -m venv venv
-          source venv/bin/activate
+        WORKDIR /app
+        COPY dist/\$LATEST_WHL /app/
 
-          # Install Flask
-          pip install flask
+        RUN pip install /app/\$LATEST_WHL
 
-          # Dynamically find the latest built `.whl` file
-          LATEST_WHL=\$(ls -t dist/*.whl | head -n 1)
-          echo "Installing latest artifact: \$LATEST_WHL"
-
-          # Ensure a .whl file is found before installing
-          if [ -f "\$LATEST_WHL" ]; then
-            pip install "\$LATEST_WHL"
-          else
-            echo "❌ No .whl file found in dist/ directory!"
-            exit 1
-          fi
-
-          # Deploy Flask Application
-          cat <<FLASK > app.py
-          from flask import Flask
-
-          app = Flask(__name__)
-
-          @app.route("/")
-          def home():
-              return "<h1>Artifact is Running Successfully on EC2!</h1>"
-
-          if __name__ == "__main__":
-              app.run(host="0.0.0.0", port=5000)
-          FLASK
-
-          # Stop existing Flask process if running
-          pkill -f app.py || true
-
-          # Start Flask in background
-          nohup python app.py > flask.log 2>&1 &
-
-          echo "✅ Artifact is running on EC2!"
+        CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8000"]
         EOF
 
-    - name: Print Artifact Server URL
+    - name: Authenticate with Docker Hub
       run: |
-       PUBLIC_IP=$(dig +short ${{ secrets.EC2_HOST }} | tail -n1)
-       echo "::notice::✅ Application Deployed Successfully! Click below to access it:"
-       echo "::notice::🔗 [Click to Access Application](http://$PUBLIC_IP:5000/)"
- 
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+    - name: Build and Push Docker Image
+      run: |
+        DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/my-app:latest"
+        docker build -t $DOCKER_IMAGE .
+        docker push $DOCKER_IMAGE
+
+        echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
+
+  # he port inside the Docker container must match the port that the Python Flask application # 
