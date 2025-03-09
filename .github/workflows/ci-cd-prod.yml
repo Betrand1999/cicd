@@ -166,14 +166,20 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/my-app:latest"
-          
-          echo "🐳 Building Docker Image: $DOCKER_IMAGE"
-          
-          docker build --no-cache --build-arg LATEST_WHL="${{ env.LATEST_WHL }}" -t $DOCKER_IMAGE -f Dockerfile .
+         DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/my-app:latest"
+        
+         echo "🐳 Building Docker Image: $DOCKER_IMAGE"
+        
+         docker build --no-cache -t $DOCKER_IMAGE \
+          --build-arg LATEST_WHL="dist/${{ env.LATEST_WHL }}" \
+          -f Dockerfile .
 
-          echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
-          docker push $DOCKER_IMAGE
+         echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
+         docker push $DOCKER_IMAGE
 
-          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
-          echo "✅ Docker Image successfully pushed: $DOCKER_IMAGE"
+         echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
+         echo "✅ Docker Image successfully pushed: $DOCKER_IMAGE"
+
+
+
+    
