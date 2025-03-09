@@ -291,15 +291,21 @@ jobs:
         echo "LATEST_WHL=$LATEST_WHL" >> $GITHUB_ENV
         echo "📦 Using artifact: $LATEST_WHL"
 
+    - name: Debug LATEST_WHL
+      run: |
+        echo "🔍 Checking LATEST_WHL: $LATEST_WHL"
+        ls -lah dist/
+
     - name: Create Dockerfile
       run: |
         cat <<EOF > Dockerfile
         FROM python:3.9-slim
 
         WORKDIR /app
-        COPY dist/${{ env.LATEST_WHL }} /app/
+        ARG LATEST_WHL
+        COPY dist/\$LATEST_WHL /app/
 
-        RUN pip install /app/${{ env.LATEST_WHL }}
+        RUN pip install /app/\$LATEST_WHL
 
         CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8000"]
         EOF
@@ -316,7 +322,7 @@ jobs:
         
         echo "🐳 Building Docker Image: $DOCKER_IMAGE"
         
-        docker build --no-cache -t $DOCKER_IMAGE .
+        docker build --no-cache --build-arg LATEST_WHL=${{ env.LATEST_WHL }} -t $DOCKER_IMAGE .
 
         echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
         docker push $DOCKER_IMAGE
