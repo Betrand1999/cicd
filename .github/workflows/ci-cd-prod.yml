@@ -146,16 +146,16 @@ on:
       - closed
 
 jobs:
-  ##################### Build ################
+  ##################### Build Python Package ################
   build:
     name: Build Python Package
-    runs-on: [self-hosted]  # Runs on your self-hosted runner
+    runs-on: [self-hosted]
     if: github.event.pull_request.merged == true
-    environment: prod  # Fetch secrets from the 'prod' environment
+    environment: prod
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python Environment
         run: |
@@ -175,12 +175,12 @@ jobs:
           ls -lah dist/
 
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: built-artifact
           path: dist/
 
-  ##################### Unit Tests ################
+  ##################### Run Unit Tests ################
   test:
     name: Run Unit Tests
     runs-on: [self-hosted]
@@ -190,7 +190,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python Environment
         run: |
@@ -214,7 +214,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Run SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
@@ -231,7 +231,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python Environment for Packaging
         run: |
@@ -256,7 +256,7 @@ jobs:
           source venv/bin/activate
           twine upload dist/*
 
-  #################### Deploy to Docker Hub ################
+  ##################### Deploy Python Artifact as Docker Image ################
   deploy-docker:
     name: Deploy Python Artifact as Docker Image
     runs-on: [self-hosted]
@@ -265,10 +265,10 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: built-artifact
           path: dist/
@@ -316,12 +316,9 @@ jobs:
           echo "🐳 Building Docker Image: $DOCKER_IMAGE"
           
           docker build --no-cache -t $DOCKER_IMAGE .
-          
+
           echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
           docker push $DOCKER_IMAGE
 
           echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
           echo "✅ Docker Image successfully pushed: $DOCKER_IMAGE"
-
- 
-
