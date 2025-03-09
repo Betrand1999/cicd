@@ -185,7 +185,7 @@ jobs:
         
         echo "🐳 Building Docker Image: $DOCKER_IMAGE"
         
-        docker build --no-cache --build-arg LATEST_WHL="${{ env.LATEST_WHL }}" -t $DOCKER_IMAGE .
+        docker build --no-cache --build-arg LATEST_WHL=$LATEST_WHL -t $DOCKER_IMAGE .
         
         echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
         docker push $DOCKER_IMAGE
