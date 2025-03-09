@@ -1,3 +1,141 @@
+# name: CI/CD Pipeline
+
+# on:
+#   pull_request:
+#     branches:
+#       - main
+#     types:
+#       - closed
+
+# jobs:
+#   ##################### Build ################
+#   build:
+#     name: Build
+#     runs-on: [self-hosted] # [self-hosted, Linux, X64,ip-172-31-22-214]
+#     if: github.event.pull_request.merged == true
+#     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
+
+#       - name: Set Up Python Environment
+#         shell: bash
+#         run: |
+#           python3 -m venv venv 
+#           source venv/bin/activate
+#           pip install --upgrade pip
+#           pip install -r requirements.txt --no-cache-dir
+# # python3 -m venv venv = create virtual env  inside your project directory
+# # source venv/bin/activate = activate and install dependencies
+
+#       - name: Clean Dist Directory
+#         shell: bash
+#         run: |
+#           rm -rf build dist *.egg-info
+
+#       - name: Build Package
+#         shell: bash
+#         run: |
+#           source venv/bin/activate
+#           pip install --upgrade setuptools wheel
+#           python setup.py sdist bdist_wheel
+#           ls dist
+
+#   ##################### Unit-Test ################
+#   test:
+#     name: Unit-Test
+#     runs-on:  [self-hosted] # [self-hosted, Linux, X64]
+#     needs: build
+#     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+#     continue-on-error: true
+
+
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
+
+#       - name: Set Up Python Environment
+#         shell: bash
+#         run: |
+#           python3 -m venv venv
+#           source venv/bin/activate
+#           pip install --upgrade pip
+#           pip install -r requirements.txt
+
+#       - name: Run Unit Tests
+#         shell: bash
+#         run: |
+#           source venv/bin/activate
+#           pip install pytest
+#           pytest test_app.py
+
+#   ##################### SonarQube Scan ################
+#   sonarqube:
+#     name: SonarQube Scan
+#     runs-on:  [self-hosted] # [self-hosted, Linux, X64]
+#     needs: test
+#     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+    
+
+
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
+#         with:
+#           fetch-depth: 0
+
+#       - name: SonarQube Scan
+#         uses: sonarsource/sonarqube-scan-action@master
+#         env:
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+
+#   #################### Package and Publish to PyPI ################
+#   package-and-publish:
+#     name: Package and Publish to PyPI
+#     runs-on:  [self-hosted] # [self-hosted, Linux, X64]
+#     needs: sonarqube
+#     environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+    
+
+
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
+
+#       - name: Set Up Python Environment for Packaging
+#         shell: bash
+#         run: |
+#           python3 -m venv venv
+#           source venv/bin/activate
+#           pip install --upgrade pip
+#           pip install setuptools wheel twine
+
+#       - name: Clean Dist Directory
+#         shell: bash
+#         run: |
+#           rm -rf dist
+
+#       - name: Build Package
+#         shell: bash
+#         run: |
+#           source venv/bin/activate
+#           python setup.py sdist bdist_wheel
+
+#       - name: Publish to PyPI
+#         shell: bash
+#         env:
+#           TWINE_USERNAME: __token__
+#           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+#         run: |
+#           source venv/bin/activate
+#           twine upload dist/*
+
+
+
+### test new wf
 name: CI/CD Pipeline
 
 on:
@@ -10,53 +148,51 @@ on:
 jobs:
   ##################### Build ################
   build:
-    name: Build
-    runs-on: [self-hosted] # [self-hosted, Linux, X64,ip-172-31-22-214]
+    name: Build Python Package
+    runs-on: [self-hosted]  # Runs on your self-hosted runner
     if: github.event.pull_request.merged == true
-    environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+    environment: prod  # Fetch secrets from the 'prod' environment
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set Up Python Environment
-        shell: bash
         run: |
-          python3 -m venv venv 
+          python3 -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt --no-cache-dir
-# python3 -m venv venv = create virtual env  inside your project directory
-# source venv/bin/activate = activate and install dependencies
 
-      - name: Clean Dist Directory
-        shell: bash
-        run: |
-          rm -rf build dist *.egg-info
+      - name: Ensure dist directory exists
+        run: mkdir -p dist
 
-      - name: Build Package
-        shell: bash
+      - name: Build Python Package
         run: |
           source venv/bin/activate
           pip install --upgrade setuptools wheel
           python setup.py sdist bdist_wheel
-          ls dist
+          ls -lah dist/
 
-  ##################### Unit-Test ################
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: built-artifact
+          path: dist/
+
+  ##################### Unit Tests ################
   test:
-    name: Unit-Test
-    runs-on:  [self-hosted] # [self-hosted, Linux, X64]
+    name: Run Unit Tests
+    runs-on: [self-hosted]
     needs: build
-    environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+    environment: prod
     continue-on-error: true
-
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set Up Python Environment
-        shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
@@ -64,7 +200,6 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run Unit Tests
-        shell: bash
         run: |
           source venv/bin/activate
           pip install pytest
@@ -73,40 +208,32 @@ jobs:
   ##################### SonarQube Scan ################
   sonarqube:
     name: SonarQube Scan
-    runs-on:  [self-hosted] # [self-hosted, Linux, X64]
+    runs-on: [self-hosted]
     needs: test
-    environment: prod  # 🔹 Fetch secrets from the 'prod' environment
-    
-
+    environment: prod
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
-      - name: SonarQube Scan
+      - name: Run SonarQube Scan
         uses: sonarsource/sonarqube-scan-action@master
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-
-  #################### Package and Publish to PyPI ################
+  #################### Publish to PyPI ################
   package-and-publish:
-    name: Package and Publish to PyPI
-    runs-on:  [self-hosted] # [self-hosted, Linux, X64]
+    name: Publish to PyPI
+    runs-on: [self-hosted]
     needs: sonarqube
-    environment: prod  # 🔹 Fetch secrets from the 'prod' environment
-    
-
+    environment: prod
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set Up Python Environment for Packaging
-        shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
@@ -114,18 +241,14 @@ jobs:
           pip install setuptools wheel twine
 
       - name: Clean Dist Directory
-        shell: bash
-        run: |
-          rm -rf dist
+        run: rm -rf dist
 
       - name: Build Package
-        shell: bash
         run: |
           source venv/bin/activate
           python setup.py sdist bdist_wheel
 
       - name: Publish to PyPI
-        shell: bash
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
@@ -133,64 +256,72 @@ jobs:
           source venv/bin/activate
           twine upload dist/*
 
-#################### Deploy to Docker Hub ################
   #################### Deploy to Docker Hub ################
-  Contanarised-py-Artifact-and-Push-Image-to-dockerhub:
-   name: Deploy Docker Image
-   runs-on: [self-hosted]  # Runs on your self-hosted runner with Docker
-   needs: package-and-publish
-   environment: prod  # 🔹 Fetch secrets from the 'prod' environment
+  deploy-docker:
+    name: Deploy Python Artifact as Docker Image
+    runs-on: [self-hosted]
+    needs: package-and-publish
+    environment: prod
 
-   steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-    - name: Get Latest Artifact
-      run: |
-        if [ ! -d "dist" ]; then
-          echo "❌ ERROR: 'dist/' directory not found!"
-          exit 1
-        fi
-        
-        LATEST_WHL=$(ls -t dist/*.whl | head -n 1)
-        
-        if [ -z "$LATEST_WHL" ]; then
-          echo "❌ ERROR: No .whl file found in dist/ directory!"
-          exit 1
-        fi
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: built-artifact
+          path: dist/
 
-        echo "LATEST_WHL=$LATEST_WHL" >> $GITHUB_ENV
-        echo "📦 Using artifact: $LATEST_WHL"
+      - name: Verify Artifact Presence
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ ERROR: 'dist/' directory not found!"
+            exit 1
+          fi
+          
+          LATEST_WHL=$(ls -t dist/*.whl | head -n 1)
+          
+          if [ -z "$LATEST_WHL" ]; then
+            echo "❌ ERROR: No .whl file found in dist/ directory!"
+            exit 1
+          fi
 
-    - name: Create Dockerfile
-      run: |
-        cat <<EOF > Dockerfile
-        FROM python:3.9-slim
+          echo "LATEST_WHL=$LATEST_WHL" >> $GITHUB_ENV
+          echo "📦 Using artifact: $LATEST_WHL"
 
-        WORKDIR /app
-        COPY dist/${{ env.LATEST_WHL }} /app/
+      - name: Create Dockerfile
+        run: |
+          cat <<EOF > Dockerfile
+          FROM python:3.9-slim
 
-        RUN pip install /app/${{ env.LATEST_WHL }}
+          WORKDIR /app
+          COPY dist/${{ env.LATEST_WHL }} /app/
 
-        CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8000"]
-        EOF
-        echo "✅ Dockerfile created successfully!"
+          RUN pip install /app/${{ env.LATEST_WHL }}
 
-    - name: Authenticate with Docker Hub
-      run: |
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-        echo "🔑 Docker authentication successful!"
+          CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=8000"]
+          EOF
+          echo "✅ Dockerfile created successfully!"
 
-    - name: Build and Push Docker Image
-      run: |
-        DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/my-app:latest"
-        
-        echo "🐳 Building Docker Image: $DOCKER_IMAGE"
-        
-        docker build --no-cache -t $DOCKER_IMAGE .
-        
-        echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
-        docker push $DOCKER_IMAGE
+      - name: Authenticate with Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          echo "🔑 Docker authentication successful!"
 
-        echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
-        echo "✅ Docker Image successfully pushed: $DOCKER_IMAGE"
+      - name: Build and Push Docker Image
+        run: |
+          DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/my-app:latest"
+          
+          echo "🐳 Building Docker Image: $DOCKER_IMAGE"
+          
+          docker build --no-cache -t $DOCKER_IMAGE .
+          
+          echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
+          docker push $DOCKER_IMAGE
+
+          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
+          echo "✅ Docker Image successfully pushed: $DOCKER_IMAGE"
+
+ 
+
