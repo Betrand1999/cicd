@@ -8,16 +8,16 @@ on:
       - closed
 
 jobs:
-  ##################### Build ################
+  ##################### Build Python Package ################
   build:
     name: Build Python Package
     runs-on: [self-hosted]
     if: github.event.pull_request.merged == true
-    environment: prod  # Fetch secrets from the 'prod' environment
+    environment: prod
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4  # Updated to latest version
+        uses: actions/checkout@v4
 
       - name: Set Up Python Environment
         run: |
@@ -37,12 +37,12 @@ jobs:
           ls -lah dist/
 
       - name: Upload Build Artifact
-        uses: actions/upload-artifact@v4  # Replaced deprecated v3
+        uses: actions/upload-artifact@v4
         with:
           name: built-artifact
           path: dist/
 
-  ##################### Unit Tests ################
+  ##################### Run Unit Tests ################
   test:
     name: Run Unit Tests
     runs-on: [self-hosted]
@@ -118,7 +118,7 @@ jobs:
           source venv/bin/activate
           twine upload dist/*
 
-  #################### Deploy to Docker Hub ################
+  ##################### Deploy Python Artifact as Docker Image ################
   deploy-docker:
     name: Deploy Python Artifact as Docker Image
     runs-on: [self-hosted]
@@ -130,7 +130,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Build Artifact
-        uses: actions/download-artifact@v4  # Updated to v4
+        uses: actions/download-artifact@v4
         with:
           name: built-artifact
           path: dist/
@@ -178,7 +178,7 @@ jobs:
           echo "🐳 Building Docker Image: $DOCKER_IMAGE"
           
           docker build --no-cache -t $DOCKER_IMAGE .
-          
+
           echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
           docker push $DOCKER_IMAGE
 
