@@ -120,7 +120,7 @@ jobs:
 
   ################### Deploy Python Artifact as Docker Image ################
   deploy-docker:
-    name: Deploy Python Artifact as Docker Image
+    name: Containerized Artifact and Push as Docker Image to Docker Hub
     runs-on: [self-hosted]
     needs: package-and-publish
     environment: prod
@@ -156,4 +156,33 @@ jobs:
         run: |
           sudo docker build -t betrand1997/cicd-image -f /home/ubuntu/actions-runner/_work/cicd/cicd/Dockerfile /home/ubuntu/actions-runner/_work/cicd/cicd
           sudo docker push betrand1997/cicd-image
-         
+
+
+       
+  ################### Deploy to Minikube ################
+  deploy-to-minikube:
+    name: Deploy to Minikube
+    runs-on: self-hosted
+    needs: deploy-docker
+    environment: prod
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Minikube
+        uses: medyagh/setup-minikube@latest
+        with:
+          minikube-version: 'latest'
+          driver: docker
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl apply -f kubernetes/k8s-deployment-namespace.yaml
+          kubectl apply -f kubernetes/k8s-deployment.yaml
+          kubectl apply -f kubernetes/k8s-deployment-service.yaml
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/hello-world-app -n your-namespace
+          kubectl get pods -n your-namespace
