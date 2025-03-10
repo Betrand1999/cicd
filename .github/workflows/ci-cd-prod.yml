@@ -154,6 +154,6 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-          docker build -t betrand1997/cicd-image -f /home/ubuntu/actions-runner/_work/cicd/cicd/Dockerfile /home/ubuntu/actions-runner/_work/cicd/cicd
-          docker push betrand1997/cicd-image
+          sudo docker build -t betrand1997/cicd-image -f /home/ubuntu/actions-runner/_work/cicd/cicd/Dockerfile /home/ubuntu/actions-runner/_work/cicd/cicd
+          sudo docker push betrand1997/cicd-image
          
