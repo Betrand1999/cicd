@@ -189,5 +189,5 @@ jobs:
           kubectl get pods -n cicd-namespace
           minikube service hello-world-app-service -n cicd-namespace --url
 
-## minikube start --profile=minikube
+### minikube start --profile=minikube
 
