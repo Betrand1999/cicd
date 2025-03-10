@@ -186,6 +186,10 @@ jobs:
           kubectl rollout status deployment/hello-world-app -n cicd-namespace
           kubectl get pods -n cicd-namespace
           minikube service hello-world-app-service -n cicd-namespace --url
+          kubectl port-forward svc/hello-world-app-service 8000:8000 -n cicd-namespace
+
+      
+    
 
 ### minikube start --profile=minikube
 
