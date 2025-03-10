@@ -162,7 +162,7 @@ jobs:
        
   ################### Deploy to Minikube ################
   deploy-to-minikube:
-    name: Deploy to Minikube
+    name: Deploy to K8s minikube
     runs-on: self-hosted
     needs: deploy-docker
     environment: prod
