@@ -18,4 +18,4 @@ spec:
           image: betrand1997/cicd-image:latest  # ✅ Keep this as it is
           ports:
             - containerPort: 8000
-          imagePullPolicy: Never
+          # imagePullPolicy: Never
