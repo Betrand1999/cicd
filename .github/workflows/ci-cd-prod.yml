@@ -67,25 +67,25 @@ jobs:
           pip install pytest
           pytest test_app.py
 
-  ##################### SonarQube Scan ################
-  # sonarqube:
-  #   name: SonarQube Scan
-  #   runs-on: [self-hosted]
-  #   timeout-minutes: 3
-  #   needs: test
-  #   environment: prod
+  #################### SonarQube Scan ################
+  sonarqube:
+    name: SonarQube Scan
+    runs-on: [self-hosted]
+    timeout-minutes: 3
+    needs: test
+    environment: prod
 
-  #   steps:
-  #     - name: Checkout Code
-  #       uses: actions/checkout@v4
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-  #     - name: Run SonarQube Scan
-  #       uses: sonarsource/sonarqube-scan-action@master
-  #       env:
-  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  #         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      - name: Run SonarQube Scan
+        uses: sonarsource/sonarqube-scan-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-  #################### Publish to PyPI ################
+  ################### Publish to PyPI ################
   package-and-publish:
     name: Publish to PyPI
     runs-on: [self-hosted]
