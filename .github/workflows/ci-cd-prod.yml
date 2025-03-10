@@ -188,7 +188,25 @@ jobs:
           minikube service hello-world-app-service -n cicd-namespace --url
           kubectl port-forward svc/hello-world-app-service 8000:8000 -n cicd-namespace
 
-      
+            - name: Verify Deployment
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/hello-world-app -n cicd-namespace
+          kubectl get pods -n cicd-namespace
+          
+          # Retrieve NodePort
+          NODE_PORT=$(kubectl get svc hello-world-app-service -n cicd-namespace -o=jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort is $NODE_PORT"
+
+          # Open Port Forwarding in Background
+          nohup kubectl port-forward svc/hello-world-app-service 8000:$NODE_PORT -n cicd-namespace &
+
+          # Wait for service to be available
+          sleep 10
+
+          # Access Application via Public IP
+          curl -v http://3.235.142.37:$NODE_PORT || echo "⚠️ Failed to access application"
+
     
 
 ### minikube start --profile=minikube
