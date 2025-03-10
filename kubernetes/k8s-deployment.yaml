@@ -14,8 +14,8 @@ spec:
         app: hello-world-app
     spec:
       containers:
-        - name: betrand1997/cicd-image
-          image: betrand1997/cicd-image:latest
+        - name: cicd-image  # ✅ Updated container name (Valid RFC 1123 format)
+          image: betrand1997/cicd-image:latest  # ✅ Keep this as it is
           ports:
             - containerPort: 8000
           imagePullPolicy: Never
