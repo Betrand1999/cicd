@@ -2,14 +2,11 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-# Define a build argument for the latest artifact (to be passed in during the build)
-ARG LATEST_WHL
+# Copy only the .whl package from dist/
+COPY dist/*.whl /app/
 
-# Copy the dynamically created artifact (Python wheel package) into the container
-COPY dist/${LATEST_WHL} /app/
-
-# Install the package inside the container
-RUN pip install /app/${LATEST_WHL}
+# Install the package
+RUN pip install /app/*.whl
 
 # Expose port 8000
 EXPOSE 8000
