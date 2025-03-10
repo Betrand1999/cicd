@@ -186,4 +186,4 @@ jobs:
       - name: Verify Deployment
         run: |
           kubectl rollout status deployment/hello-world-app -n your-namespace
-          kubectl get pods -n your-namespace
+          kubectl get pods -n cicd-namespace 
