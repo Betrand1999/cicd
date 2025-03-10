@@ -151,7 +151,8 @@ jobs:
 
           echo "🐳 Building Docker Image: $DOCKER_IMAGE"
 
-          docker build --no-cache -t $DOCKER_IMAGE -f Dockerfile .
+          # Force the use of regular 'docker build' instead of 'docker buildx build'
+          DOCKER_BUILDKIT=0 docker build --no-cache -t $DOCKER_IMAGE -f Dockerfile .
 
           echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
           docker push $DOCKER_IMAGE
