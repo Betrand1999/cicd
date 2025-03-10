@@ -119,7 +119,6 @@ jobs:
           twine upload dist/*
 
   ################### Deploy Python Artifact as Docker Image ################
-  ##################### Deploy Python Artifact as Docker Image ################
   deploy-docker:
     name: Deploy Python Artifact as Docker Image
     runs-on: [self-hosted]
@@ -136,27 +135,9 @@ jobs:
           name: built-artifact
           path: dist/
 
-      - name: Verify Artifact Presence
+      - name: Debug Artifact and Environment Variables
         run: |
-          if [ ! -d "dist" ]; then
-            echo "❌ ERROR: 'dist/' directory not found!"
-            exit 1
-          fi
-          
-          LATEST_WHL=$(ls -t dist/*.whl | head -n 1)
-          
-          if [ -z "$LATEST_WHL" ]; then
-            echo "❌ ERROR: No .whl file found in dist/ directory!"
-            exit 1
-          fi
-
-          echo "LATEST_WHL=$LATEST_WHL" >> $GITHUB_ENV
-          echo "📦 Using artifact: $LATEST_WHL"
-
-      - name: Debug Environment Variables
-        run: |
-          echo "🔍 DOCKER_IMAGE: $DOCKER_IMAGE"
-          echo "🔍 LATEST_WHL: $LATEST_WHL"
+          echo "🔍 Checking dist/ directory contents:"
           ls -lah dist/
 
       - name: Authenticate with Docker Hub
@@ -166,20 +147,14 @@ jobs:
 
       - name: Build and Push Docker Image
         run: |
-         DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/my-app:latest"
-        
-         echo "🐳 Building Docker Image: $DOCKER_IMAGE"
-        
-         docker build --no-cache -t $DOCKER_IMAGE \
-          --build-arg LATEST_WHL="dist/${{ env.LATEST_WHL }}" \
-          -f Dockerfile .
+          DOCKER_IMAGE="${{ secrets.DOCKER_USERNAME }}/my-app:latest"
 
-         echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
-         docker push $DOCKER_IMAGE
+          echo "🐳 Building Docker Image: $DOCKER_IMAGE"
 
-         echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
-         echo "✅ Docker Image successfully pushed: $DOCKER_IMAGE"
+          docker build --no-cache -t $DOCKER_IMAGE -f Dockerfile .
 
+          echo "📤 Pushing Docker Image: $DOCKER_IMAGE"
+          docker push $DOCKER_IMAGE
 
-
-    
+          echo "DOCKER_IMAGE=$DOCKER_IMAGE" >> $GITHUB_ENV
+          echo "✅ Docker Image successfully pushed: $DOCKER_IMAGE"
