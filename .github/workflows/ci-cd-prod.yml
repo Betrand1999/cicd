@@ -71,7 +71,7 @@ jobs:
   sonarqube:
     name: SonarQube Scan
     runs-on: [self-hosted]
-    timeout-minutes: 3
+    #timeout-minutes: 3
     needs: test
     environment: prod
     # if: false
