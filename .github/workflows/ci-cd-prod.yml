@@ -209,5 +209,5 @@ jobs:
 
     
 
-### minikube start --profile=minikube
+### qminikube start --profile=minikube
 
